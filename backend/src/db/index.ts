@@ -14,7 +14,8 @@ if (!ENV.DATABASE_URL) {
  * 1) Opening/Closing connections is slow, reuse existing connections rather than
  * creating a new connection for each request
  * 2) Database limits concurrent connections, a pool manages a fixed number of connections and
- * shares them across requests, default : 10
+ * shares them across requests, 
+ * default : 10 connections
  */
 
 // initialise PostgreSQL connection pool
