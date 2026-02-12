@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq } from 'drizzle-orm';
+import { eq, exists } from 'drizzle-orm';
 import {
   users,
   comments,
@@ -24,6 +24,11 @@ export const getUserById = async (id: string) => {
 };
 
 export const updateUser = async (id: string, data: Partial<NewUser>) => {
+  const existingUser = await getUserById(id);
+  if (!existingUser) {
+    throw new Error(`User with id ${id} not found!`);
+  }
+
   const [user] = await db
     .update(users)
     .set(data)
@@ -34,9 +39,15 @@ export const updateUser = async (id: string, data: Partial<NewUser>) => {
 
 // create or update in one method
 export const upsertUser = async (data: NewUser) => {
-  const existingUser = await getUserById(data.id);
-  if (existingUser) return updateUser(data.id, data);
-  return createUser(data);
+  const [user] = await db
+    .insert(users)
+    .values(data)
+    .onConflictDoUpdate({
+      target: users.id,
+      set: data,
+    })
+    .returning();
+  return user;
 };
 
 /**
@@ -82,6 +93,11 @@ export const updateProductById = async (
   id: string,
   data: Partial<NewProduct>,
 ) => {
+  const exisitingProduct = await getProductById(id);
+  if (!exisitingProduct) {
+    throw new Error(`Product with id ${id} not found!`);
+  }
+
   const [product] = await db
     .update(products)
     .set(data)
@@ -91,6 +107,10 @@ export const updateProductById = async (
 };
 
 export const deleteProductById = async (id: string) => {
+  const exisitingProduct = await getProductById(id);
+  if (!exisitingProduct) {
+    throw new Error(`Product with id ${id} not found!`);
+  }
   const [product] = await db
     .delete(products)
     .where(eq(products.id, id))
@@ -109,6 +129,11 @@ export const createComment = async (data: NewComment) => {
 };
 
 export const deleteComment = async (id: string) => {
+  const exisitingComment = await getCommentById(id);
+  if (!exisitingComment) {
+    throw new Error(`Comment with id ${id} not found`);
+  }
+
   const [comment] = await db
     .delete(comments)
     .where(eq(comments.id, id))
