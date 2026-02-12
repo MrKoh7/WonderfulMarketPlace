@@ -1,0 +1,80 @@
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+
+export const users = pgTable('users', {
+  id: text('id').primaryKey(), // using ClerkId
+  email: text('email').notNull().unique(),
+  name: text('name'),
+  imageUrl: text('image_url'),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+});
+
+export const products = pgTable('product', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  imageUrl: text('image_url').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+});
+
+export const comments = pgTable('comments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  content: text('content').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  productId: uuid('product_id')
+    .notNull()
+    .references(() => products.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+});
+
+// Table Relations
+/**
+ * 1 User -> many products
+ * 1 User -> many comments
+ */
+export const usersRelations = relations(users, ({ many }) => ({
+  products: many(products),
+  comments: many(comments),
+}));
+
+/**
+ * 1 product -> 1 user
+ * 1 product -> many comments
+ */
+export const productsRelations = relations(products, ({ one, many }) => ({
+  comments: many(comments),
+  /**
+   * fields : foreign key column in THIS table(products.userId)
+   * references : primary key column in the RELATED table(users.id)
+   */
+  user: one(users, { fields: [products.userId], references: [users.id] }),
+}));
+
+/**
+ * 1 comments -> 1 product
+ * 1 comments -> 1 user
+ */
+export const commentsRelations = relations(comments, ({ one }) => ({
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+  products: one(products, {
+    fields: [comments.productId],
+    references: [products.id],
+  }),
+}));
+
+// Type inference
+export type User = typeof users.$inferSelect;
+export type Newuser = typeof users.$inferInsert;
+
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
