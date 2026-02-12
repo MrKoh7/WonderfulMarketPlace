@@ -11,7 +11,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-  res.json({ success: true });
+  res.json({
+    message:
+      'Welcome to WonderfulMarketPlace API - Powered by PostgreSQL, Drizzle ORM & Clerk Authentication',
+    endpoints: {
+      uses: '/api/users',
+      products: '/api/products',
+      comments: '/api/comments',
+    },
+  });
 });
 
 app.listen(ENV.PORT, () => {
