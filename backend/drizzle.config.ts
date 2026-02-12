@@ -5,6 +5,6 @@ export default defineConfig({
   schema: './src/db/schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
-    url: ENV.DATABASE_URL!,
+    url: ENV.DATABASE_URL!, //enfource the url exist
   },
 });

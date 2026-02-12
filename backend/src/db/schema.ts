@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
+// database schema for users, products and comments
 export const users = pgTable('users', {
   id: text('id').primaryKey(), // using ClerkId
   email: text('email').notNull().unique(),
