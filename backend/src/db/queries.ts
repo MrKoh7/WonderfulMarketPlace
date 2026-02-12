@@ -84,6 +84,7 @@ export const getProductById = async (id: string) => {
 
 export const getProductsByUserId = async (userId: string) => {
   return db.query.products.findMany({
+    where: eq(products.userId, userId),
     with: { user: true },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
   });
