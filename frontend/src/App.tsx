@@ -6,6 +6,11 @@ import CreatePage from './pages/CreatePage';
 import EditProductPage from './pages/EditProductPage';
 import { Route, Routes } from 'react-router';
 
+/**
+ * Application root component that renders the site layout and client-side routes.
+ *
+ * @returns The root JSX element containing the Navbar and the routed page content.
+ */
 function App() {
   return (
     <>
