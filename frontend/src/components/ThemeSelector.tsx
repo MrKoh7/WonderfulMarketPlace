@@ -36,6 +36,13 @@ const THEMES = [
   'sunset',
 ];
 
+/**
+ * Renders a theme-selection dropdown that lets the user pick and persist a UI theme.
+ *
+ * Initializes the selected theme from localStorage when running in a browser (defaults to "forest"), updates the document root `data-theme` attribute, and persists changes to localStorage whenever the selection changes.
+ *
+ * @returns A JSX element containing the theme selector dropdown with theme options and color swatches.
+ */
 function ThemeSelector() {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
