@@ -3,12 +3,17 @@ import cors from 'cors';
 import { ENV } from './config/env';
 import { clerkMiddleware } from '@clerk/express';
 import userRoutes from './routes/userRoutes';
-import productRoutes from './routes/userRoutes';
-import commentRoutes from './routes/userRoutes';
+import productRoutes from './routes/productRoutes';
+import commentRoutes from './routes/commentRoutes';
 
 const app = express();
 
-app.use(cors({ origin: ENV.FRONTED_URL }));
+app.use(
+  cors({
+    origin: ENV.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 app.use(clerkMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
