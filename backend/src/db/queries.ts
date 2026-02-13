@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq, exists } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   users,
   comments,
