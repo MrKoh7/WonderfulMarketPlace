@@ -5,8 +5,15 @@ import ProfilePage from './pages/ProfilePage';
 import CreatePage from './pages/CreatePage';
 import EditProductPage from './pages/EditProductPage';
 import { Route, Routes } from 'react-router';
+import useAuthRequest from './hooks/useAuthRequest';
+import useUserSync from './hooks/useUserSync';
 
 function App() {
+  const { isClerkLoaded, isSignedIn } = useAuthRequest();
+  useUserSync();
+
+  if(!isClerkLoaded) return null
+
   return (
     <>
       <div className="min-h-screen bg-base-100">
