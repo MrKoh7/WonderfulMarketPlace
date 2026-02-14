@@ -12,9 +12,9 @@ import {
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { data: products, isLoading } = useMyProducts();
+  const { data, isLoading } = useMyProducts();
   const deleteProduct = useDeleteProduct();
-
+  const products = data?.products || [];
   const handleDelete = (id) => {
     if (confirm('Delete this product?')) deleteProduct.mutate(id);
   };
@@ -33,6 +33,7 @@ const ProfilePage = () => {
         </Link>
       </div>
 
+      {/* Stats */}
       <div className="stats bg-base-300 w-full">
         <div className="stat">
           <div className="stat-title">Total Products</div>
@@ -40,6 +41,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {/* Products */}
       {products?.length === 0 ? (
         <div className="card bg-base-300">
           <div className="card-body items-center text-center py-16">
