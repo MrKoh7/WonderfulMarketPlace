@@ -33,7 +33,6 @@ const ProfilePage = () => {
         </Link>
       </div>
 
-      {/* Stats */}
       <div className="stats bg-base-300 w-full">
         <div className="stat">
           <div className="stat-title">Total Products</div>
@@ -41,7 +40,6 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Products */}
       {products?.length === 0 ? (
         <div className="card bg-base-300">
           <div className="card-body items-center text-center py-16">
