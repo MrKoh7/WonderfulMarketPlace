@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, or } from 'drizzle-orm';
 import {
   users,
   comments,
@@ -66,6 +66,19 @@ export const getAllProduct = async () => {
     orderBy: (products, { desc }) => [desc(products.createdAt)],
     // get latest products first
     // Drizzle ORM expects an array even for a single column in the square bracket
+  });
+};
+
+// Search products by title or description using case-insensitive ILIKE
+export const searchProducts = async (search?: string) => {
+  const pattern = search ? `%${search}%` : undefined;
+
+  return db.query.products.findMany({
+    where: pattern
+      ? or(ilike(products.title, pattern), ilike(products.description, pattern))
+      : undefined,
+    with: { user: true },
+    orderBy: (products, { desc }) => [desc(products.createdAt)],
   });
 };
 

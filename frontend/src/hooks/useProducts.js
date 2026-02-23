@@ -8,8 +8,13 @@ import {
   updateProduct,
 } from '../lib/api';
 
-export const useProducts = () => {
-  const result = useQuery({ queryKey: ['products'], queryFn: getAllProducts });
+// Accepts optional search term — queryKey includes search so TanStack Query
+// automatically refetches when the debounced search value changes
+export const useProducts = (search) => {
+  const result = useQuery({
+    queryKey: ['products', search],
+    queryFn: () => getAllProducts(search),
+  });
   return result;
 };
 
@@ -42,7 +47,7 @@ export const useMyProducts = () => {
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({ 
+  return useMutation({
     mutationFn: updateProduct,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

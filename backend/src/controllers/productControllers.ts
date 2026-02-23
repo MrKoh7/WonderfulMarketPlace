@@ -2,11 +2,12 @@ import type { Request, Response } from 'express';
 import * as queries from '../db/queries';
 import { getAuth } from '@clerk/express';
 
-// GET all products
+// GET all products (with optional search filtering)
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const products = await queries.getAllProduct();
-    res.status(200).json({ products });
+    const search = req.query.search as string | undefined;
+    const products = await queries.searchProducts(search);
+    res.status(200).json({ products, total: products.length });
   } catch (error) {
     console.error('Error Fetching Products: ', error);
     res.status(500).json({ error: 'Failed to get products' });
