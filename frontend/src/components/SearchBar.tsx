@@ -11,11 +11,11 @@ const SearchBar = ({ value, onChange, isFetching }) => {
     setInputValue(value);
   }, [value]);
 
-  // Debounce: wait 400ms after the user stops typing
+  // Debounce: wait 2s after the user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       onChange(inputValue);
-    }, 400);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [inputValue, onChange]);
