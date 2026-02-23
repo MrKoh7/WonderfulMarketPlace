@@ -9,7 +9,6 @@ import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import { SignInButton } from '@clerk/clerk-react';
 
-
 function HomePage() {
   // Sync search term with URL query params (?search=...)
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,16 +31,6 @@ function HomePage() {
   );
   const products = data?.products || [];
   const total = data?.total ?? products.length;
-
-  if (isLoading) return <LoadingSpinner />;
-
-  if (error) {
-    return (
-      <div role="alert" className="alert alert-error">
-        <span>Something went wrong. Please refresh the page.</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-10">
@@ -95,7 +84,13 @@ function HomePage() {
           </p>
         )}
 
-        {products.length === 0 ? (
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <div role="alert" className="alert alert-error">
+            <span>Something went wrong. Please refresh the page.</span>
+          </div>
+        ) : products.length === 0 ? (
           searchTerm ? (
             // Empty state specifically for search with no results
             <div className="card bg-base-300">
