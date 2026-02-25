@@ -10,10 +10,10 @@ import {
 
 // Accepts optional search term — queryKey includes search so TanStack Query
 // automatically refetches when the debounced search value changes
-export const useProducts = (search) => {
+export const useProducts = (search, page = 1, limit = 12) => {
   const result = useQuery({
-    queryKey: ['products', search],
-    queryFn: () => getAllProducts(search),
+    queryKey: ['products', search, page, limit],
+    queryFn: () => getAllProducts(search, page, limit),
   });
   return result;
 };

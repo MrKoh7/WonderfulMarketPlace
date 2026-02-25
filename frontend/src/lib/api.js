@@ -7,8 +7,8 @@ export const syncUser = async (userData) => {
 };
 
 // Products API
-export const getAllProducts = async (search) => {
-  const params = search ? { search } : {};
+export const getAllProducts = async (search, page, limit) => {
+  const params = { page, limit, ...(search && { search }) }; 
   const { data } = await api.get('/products', { params });
   return data;
 };
