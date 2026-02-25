@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq, ilike, or } from 'drizzle-orm';
+import { eq, ilike, or, count } from 'drizzle-orm';
 import {
   users,
   comments,
@@ -70,16 +70,31 @@ export const getAllProduct = async () => {
 };
 
 // Search products by title or description using case-insensitive ILIKE
-export const searchProducts = async (search?: string) => {
+export const searchProducts = async (
+  search?: string,
+  page: number = 1,
+  limit: number = 12,
+) => {
   const pattern = search ? `%${search}%` : undefined;
+  const offset = (page - 1) * limit;
+  const whereCondition = pattern
+    ? or(ilike(products.title, pattern), ilike(products.description, pattern))
+    : undefined;
 
-  return db.query.products.findMany({
-    where: pattern
-      ? or(ilike(products.title, pattern), ilike(products.description, pattern))
-      : undefined,
+  const data = await db.query.products.findMany({
+    where: whereCondition,
     with: { user: true },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
+    offset: offset,
+    limit: limit,
   });
+
+  const [{ count: total }] = await db
+    .select({ count: count() })
+    .from(products)
+    .where(whereCondition);
+
+  return { data, total };
 };
 
 export const getProductById = async (id: string) => {

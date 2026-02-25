@@ -6,13 +6,16 @@ import { getAuth } from '@clerk/express';
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
-    const products = await queries.searchProducts(search);
-    res.status(200).json({ products, total: products.length });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
+    const {data, total} = await queries.searchProducts(search, page, limit);
+    res.status(200).json({ data, total:Number(total), page, limit, totalPages: Math.ceil(Number(total)/limit) });
   } catch (error) {
     console.error('Error Fetching Products: ', error);
     res.status(500).json({ error: 'Failed to get products' });
   }
 };
+
 
 // Get products for current user (protected)
 export const getMyProducts = async (req: Request, res: Response) => {

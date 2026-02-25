@@ -13,24 +13,41 @@ function HomePage() {
   // Sync search term with URL query params (?search=...)
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') || '';
+  const page = parseInt(searchParams.get('page') || 1);
+  const limit = 12;
 
   // Stable callback so SearchBar's debounce effect doesn't re-trigger unnecessarily
   const handleSearchChange = useCallback(
     (value) => {
       if (value) {
-        setSearchParams({ search: value });
+        setSearchParams({ search: value, page: '1' });
       } else {
-        setSearchParams({});
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('search');
+          return next;
+        });
       }
     },
     [setSearchParams],
   );
 
+  const handlePageChange = (newPage) => {
+    setSearchParams({
+      ...(searchTerm && { search: searchTerm }),
+      page: String(newPage),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const { data, isLoading, isFetching, error } = useProducts(
     searchTerm || undefined,
+    page,
+    limit,
   );
-  const products = data?.products || [];
-  const total = data?.total ?? products.length;
+  const products = data?.data || [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   return (
     <div className="space-y-10">
@@ -90,7 +107,7 @@ function HomePage() {
           <div role="alert" className="alert alert-error">
             <span>Something went wrong. Please refresh the page.</span>
           </div>
-        ) : products.length === 0 ? (
+        ) : total === 0 ? (
           searchTerm ? (
             // Empty state specifically for search with no results
             <div className="card bg-base-300">
@@ -138,6 +155,29 @@ function HomePage() {
                 searchTerm={searchTerm}
               />
             ))}
+          </div>
+        )}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-base-content/60">
+              Page {page} of {totalPages}
+            </span>
+
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
