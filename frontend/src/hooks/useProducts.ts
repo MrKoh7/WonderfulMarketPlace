@@ -7,32 +7,44 @@ import {
   getProductById,
   updateProduct,
 } from '../lib/api';
+import type {
+  PaginatedProducts,
+  ProductWithDetails,
+  ProductFormData,
+  Product,
+  MyProductsResponse,
+} from '../types';
 
 // Accepts optional search term — queryKey includes search so TanStack Query
 // automatically refetches when the debounced search value changes
-export const useProducts = (search, page = 1, limit = 12) => {
-  const result = useQuery({
+export const useProducts = (
+  search: string | undefined,
+  page: number = 1,
+  limit: number = 12,
+) => {
+  return useQuery<PaginatedProducts, Error>({
     queryKey: ['products', search, page, limit],
     queryFn: () => getAllProducts(search, page, limit),
   });
-  return result;
 };
 
 export const useCreateProduct = () => {
-  return useMutation({ mutationFn: createProduct });
+  return useMutation<Product, Error, ProductFormData>({
+    mutationFn: createProduct,
+  });
 };
 
-export const useProduct = (id) => {
-  return useQuery({
+export const useProduct = (id: string | undefined) => {
+  return useQuery<ProductWithDetails, Error>({
     queryKey: ['product', id],
-    queryFn: () => getProductById(id),
-    enabled: !!id, // double bang operator -> convert object to boolean
+    queryFn: () => getProductById(id!),
+    enabled: !!id,
   });
 };
 
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<{ message: string }, Error, string>({
     mutationFn: deleteProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myProducts'] });
@@ -41,13 +53,15 @@ export const useDeleteProduct = () => {
 };
 
 export const useMyProducts = () => {
-  return useQuery({ queryKey: ['myProducts'], queryFn: getMyProducts });
+  return useQuery<MyProductsResponse, Error>({
+    queryKey: ['myProducts'],
+    queryFn: getMyProducts,
+  });
 };
 
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
-
-  return useMutation({
+  return useMutation<Product, Error, ProductFormData & { id: string }>({
     mutationFn: updateProduct,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

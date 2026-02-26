@@ -2,9 +2,10 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { syncUser } from '../lib/api';
+import type { User, SyncUserData } from '../types';
 
 // the best way to implement this is by using webhooks
-function useUserSync() {
+function useUserSync(): { isSynced: boolean } {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -12,7 +13,7 @@ function useUserSync() {
     mutate: syncUserMutation,
     isPending,
     isSuccess,
-  } = useMutation({ mutationFn: syncUser });
+  } = useMutation<User, Error, SyncUserData>({ mutationFn: syncUser });
 
   useEffect(() => {
     if (isSignedIn && user && !isPending && !isSuccess) {

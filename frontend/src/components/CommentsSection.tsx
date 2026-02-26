@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useAuth, SignInButton } from '@clerk/clerk-react';
 import { useCreateComment, useDeleteComment } from '../hooks/useComments';
@@ -8,14 +7,25 @@ import {
   MessageSquareIcon,
   LogInIcon,
 } from 'lucide-react';
+import type { CommentWithUser } from '../types';
 
-const CommentsSection = ({ productId, comments = [], currentUserId }) => {
+interface CommentsSectionProps {
+  productId: string;
+  comments: CommentWithUser[];
+  currentUserId: string | null | undefined;
+}
+
+const CommentsSection = ({
+  productId,
+  comments = [],
+  currentUserId,
+}: CommentsSectionProps) => {
   const { isSignedIn } = useAuth();
   const [content, setContent] = useState('');
   const createComment = useCreateComment();
   const deleteComment = useDeleteComment(productId);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!content.trim()) return;
     createComment.mutate(
@@ -79,7 +89,10 @@ const CommentsSection = ({ productId, comments = [], currentUserId }) => {
             <div key={comment.id} className="chat chat-start">
               <div className="chat-image avatar">
                 <div className="w-8 rounded-full">
-                  <img src={comment.user?.imageUrl} alt={comment.user?.name} />
+                  <img
+                    src={comment.user?.imageUrl ?? undefined}
+                    alt={comment.user?.name ?? undefined}
+                  />
                 </div>
               </div>
 

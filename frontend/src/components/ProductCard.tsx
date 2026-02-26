@@ -1,10 +1,26 @@
-// @ts-nocheck
 import { Link } from 'react-router';
 import { MessageCircleIcon } from 'lucide-react';
+import type { ProductWithUser } from '../types';
+import type { FC } from 'react';
+
+interface HighlightTextProps {
+  text: string;
+  highlight: string;
+}
+
+interface ProductCardProps {
+  product: ProductWithUser;
+  searchTerm?: string;
+  HighlightText?: FC<HighlightTextProps>;
+}
 
 const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-const ProductCard = ({ product, searchTerm, HighlightText }) => {
+const ProductCard = ({
+  product,
+  searchTerm,
+  HighlightText,
+}: ProductCardProps) => {
   const isNew = new Date(product.createdAt) > oneWeekAgo;
 
   return (
@@ -39,7 +55,10 @@ const ProductCard = ({ product, searchTerm, HighlightText }) => {
             <div className="flex items-center gap-2">
               <div className="avatar">
                 <div className="w-6 rounded-full ring-1 ring-primary">
-                  <img src={product.user.imageUrl} alt={product.user.name} />
+                  <img
+                    src={product.user.imageUrl ?? undefined}
+                    alt={product.user.name ?? undefined}
+                  />
                 </div>
               </div>
               <span className="text-xs text-base-content/60">

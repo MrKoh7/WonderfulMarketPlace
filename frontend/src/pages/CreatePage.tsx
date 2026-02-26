@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useCreateProduct } from '../hooks/useProducts';
@@ -9,17 +8,18 @@ import {
   SparklesIcon,
   TypeIcon,
 } from 'lucide-react';
+import type { ProductFormData } from '../types';
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const createProduct = useCreateProduct();
-  const [ formData, setFormData ] = useState({
+  const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     description: '',
     imageUrl: '',
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     createProduct.mutate(formData, {
       onSuccess: () => navigate('/'),
@@ -74,7 +74,7 @@ const CreatePage = () => {
                   src={formData.imageUrl}
                   alt="Preview"
                   className="w-full h-40 object-cover"
-                  onError={(e) => (e.target.style.display = 'none')}
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
                 />
               </div>
             )}

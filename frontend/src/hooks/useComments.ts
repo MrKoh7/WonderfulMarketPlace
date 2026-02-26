@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createComment, deleteComment } from '../lib/api';
+import type { Comment } from '../types';
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<Comment, Error, { productId: string; content: string }>({
     mutationFn: createComment,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -13,9 +14,9 @@ export const useCreateComment = () => {
   });
 };
 
-export const useDeleteComment = (productId) => {
+export const useDeleteComment = (productId: string) => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<void, Error, { commentId: string }>({
     mutationFn: deleteComment,
     onSuccess: () => {
       queryClient.invalidateQueries({

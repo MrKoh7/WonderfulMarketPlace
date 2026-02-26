@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Link, useNavigate } from 'react-router';
 import { useMyProducts, useDeleteProduct } from '../hooks/useProducts';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,7 +14,8 @@ const ProfilePage = () => {
   const { data, isLoading } = useMyProducts();
   const deleteProduct = useDeleteProduct();
   const products = data?.products || [];
-  const handleDelete = (id) => {
+
+  const handleDelete = (id: string) => {
     if (confirm('Delete this product?')) deleteProduct.mutate(id);
   };
 
@@ -36,11 +36,11 @@ const ProfilePage = () => {
       <div className="stats bg-base-300 w-full">
         <div className="stat">
           <div className="stat-title">Total Products</div>
-          <div className="stat-value text-primary">{products?.length || 0}</div>
+          <div className="stat-value text-primary">{products.length}</div>
         </div>
       </div>
 
-      {products?.length === 0 ? (
+      {products.length === 0 ? (
         <div className="card bg-base-300">
           <div className="card-body items-center text-center py-16">
             <PackageIcon className="size-16 text-base-content/20" />

@@ -1,4 +1,3 @@
-//@ts-nocheck
 import {
   ArrowLeftIcon,
   ImageIcon,
@@ -8,9 +7,22 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import type { Product, ProductFormData } from '../types';
 
-const EditProductForm = ({ product, isPending, isError, onSubmit }) => {
-  const [formData, setFormData] = useState({
+interface EditProductFormProps {
+  product: Product;
+  isPending: boolean;
+  isError: boolean;
+  onSubmit: (formData: ProductFormData) => void;
+}
+
+const EditProductForm = ({
+  product,
+  isPending,
+  isError,
+  onSubmit,
+}: EditProductFormProps) => {
+  const [formData, setFormData] = useState<ProductFormData>({
     title: product.title,
     description: product.description,
     imageUrl: product.imageUrl,
