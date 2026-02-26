@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { useProducts } from '../hooks/useProducts';
@@ -13,12 +12,12 @@ function HomePage() {
   // Sync search term with URL query params (?search=...)
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') || '';
-  const page = parseInt(searchParams.get('page') || 1);
+  const page = parseInt(searchParams.get('page') || '1');
   const limit = 12;
 
   // Stable callback so SearchBar's debounce effect doesn't re-trigger unnecessarily
   const handleSearchChange = useCallback(
-    (value) => {
+    (value: string) => {
       if (value) {
         setSearchParams({ search: value, page: '1' });
       } else {
@@ -32,7 +31,7 @@ function HomePage() {
     [setSearchParams],
   );
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     setSearchParams({
       ...(searchTerm && { search: searchTerm }),
       page: String(newPage),

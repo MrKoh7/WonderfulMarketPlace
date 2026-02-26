@@ -1,21 +1,21 @@
-// @ts-nocheck
 import { useNavigate, useParams, Link } from 'react-router';
 import { useAuth } from '@clerk/clerk-react';
 import { useProduct, useUpdateProduct } from '../hooks/useProducts';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EditProductForm from '../components/EditProductForm';
+import type { ProductFormData } from '../types';
 
 const EditProductPage = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { userId } = useAuth();
   const navigate = useNavigate();
 
-  const { data: product, isLoading, error } = useProduct(id);
+  const { data: product, isLoading } = useProduct(id);
   const updateProduct = useUpdateProduct();
 
   if (isLoading) return <LoadingSpinner />;
 
-  if (!product || product.userId !== userId) {
+  if (!product || !id || product.userId !== userId) {
     return (
       <div className="card bg-base-300 max-w-md mx-auto">
         <div className="card-body items-center text-center">
@@ -35,7 +35,7 @@ const EditProductPage = () => {
       product={product}
       isPending={updateProduct.isPending}
       isError={updateProduct.isError}
-      onSubmit={(formData) => {
+      onSubmit={(formData: ProductFormData) => {
         updateProduct.mutate(
           { id, ...formData },
           {

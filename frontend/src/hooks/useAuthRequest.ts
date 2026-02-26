@@ -1,25 +1,33 @@
-import { useAuth } from "@clerk/clerk-react";
-import { useEffect } from "react";
-import api from "../lib/axios";
+import { useAuth } from '@clerk/clerk-react';
+import { useEffect } from 'react';
+import api from '../lib/axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 
 let isInterceptorRegistered = false;
 
-function useAuthReq() {
+interface UseAuthReqReturn {
+  isSignedIn: boolean | undefined;
+  isClerkLoaded: boolean | undefined;
+}
+
+function useAuthReq(): UseAuthReqReturn {
   const { isSignedIn, getToken, isLoaded } = useAuth();
   // include the token to the request headers
   useEffect(() => {
     if (isInterceptorRegistered) return;
     isInterceptorRegistered = true;
 
-    const interceptor = api.interceptors.request.use(async (config) => {
-      if (isSignedIn) {
-        const token = await getToken();
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+    const interceptor = api.interceptors.request.use(
+      async (config: InternalAxiosRequestConfig) => {
+        if (isSignedIn) {
+          const token = await getToken();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
-      }
-      return config;
-    });
+        return config;
+      },
+    );
 
     return () => {
       api.interceptors.request.eject(interceptor);

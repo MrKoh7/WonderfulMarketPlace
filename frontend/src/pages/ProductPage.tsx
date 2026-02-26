@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
   ArrowLeftIcon,
   EditIcon,
@@ -13,7 +12,7 @@ import { useProduct, useDeleteProduct } from '../hooks/useProducts';
 import { useParams, Link, useNavigate } from 'react-router';
 
 const ProductPage = () => {
-  const { id } = useParams(); // get id from the url
+  const { id } = useParams<{ id: string }>();
   const { userId } = useAuth();
   const navigate = useNavigate();
 
@@ -21,6 +20,7 @@ const ProductPage = () => {
   const deleteProduct = useDeleteProduct();
 
   const handleDelete = () => {
+    if (!id) return;
     if (confirm('Delete this product permanently?')) {
       deleteProduct.mutate(id, {
         onSuccess: () => navigate('/'),
@@ -113,7 +113,10 @@ const ProductPage = () => {
               <div className="flex items-center gap-3">
                 <div className="avatar">
                   <div className="w-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <img src={product.user.imageUrl} alt={product.user.name} />
+                    <img
+                      src={product.user.imageUrl ?? undefined}
+                      alt={product.user.name ?? undefined}
+                    />
                   </div>
                 </div>
                 <div>
@@ -129,7 +132,7 @@ const ProductPage = () => {
       <div className="card bg-base-300">
         <div className="card-body">
           <CommentsSection
-            productId={id}
+            productId={id ?? ''}
             comments={product.comments}
             currentUserId={userId}
           />
