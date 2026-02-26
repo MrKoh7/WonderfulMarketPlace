@@ -1,8 +1,13 @@
-//@ts-nocheck
 import { useState, useEffect } from 'react';
 import { SearchIcon, XIcon, LoaderIcon } from 'lucide-react';
 
-const SearchBar = ({ value, onChange, isFetching }) => {
+interface SearchBarProps {
+  value: string;
+  onChange: (value: string) => void;
+  isFetching: boolean;
+}
+
+const SearchBar = ({ value, onChange, isFetching }: SearchBarProps) => {
   // Local input state — the user types here immediately (no lag)
   const [inputValue, setInputValue] = useState(value);
 
