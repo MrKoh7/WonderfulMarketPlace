@@ -26,6 +26,7 @@ const EditProductForm = ({
     title: product.title,
     description: product.description,
     imageUrl: product.imageUrl,
+    price: (product as any).price ?? null,
   });
 
   return (
@@ -73,6 +74,21 @@ const EditProductForm = ({
                   setFormData({ ...formData, imageUrl: e.target.value })
                 }
                 required
+              />
+            </label>
+
+            <label className="input input-bordered flex items-center gap-2 bg-base-200">
+              <span className="text-base-content/50">RM </span>
+              <input
+                type="number"
+                placeholder="Price"
+                className="grow"
+                step="0.01"
+                min="0"
+                value={formData.price || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value || null })
+                }
               />
             </label>
 

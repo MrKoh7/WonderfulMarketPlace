@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq, ilike, or, count } from 'drizzle-orm';
+import { eq, ilike, or, count, and } from 'drizzle-orm';
 import {
   users,
   comments,
@@ -7,6 +7,7 @@ import {
   type NewUser,
   type NewComment,
   type NewProduct,
+  cartItems,
 } from './schema';
 
 /**
@@ -145,6 +146,61 @@ export const deleteProductById = async (id: string) => {
     .where(eq(products.id, id))
     .returning();
   return product;
+};
+
+/**
+ *
+ * Cart Items
+ */
+
+export const getCartItemsByUserId = async (userId: string) => {
+  return db.query.cartItems.findMany({
+    where: eq(cartItems.userId, userId),
+    with: {
+      product: true,
+    },
+  });
+};
+
+export const addToCart = async (userId: string, productId: string) => {
+  const existing = await db.query.cartItems.findFirst({
+    where: and(
+      eq(cartItems.userId, userId),
+      eq(cartItems.productId, productId),
+    ),
+  });
+
+  if (existing) {
+    const [updated] = await db
+      .update(cartItems)
+      .set({ quantity: existing.quantity + 1 })
+      .where(eq(cartItems.id, existing.id))
+      .returning();
+    return updated;
+  }
+
+  const [newItem] = await db
+    .insert(cartItems)
+    .values({ userId, productId, quantity: 1 })
+    .returning();
+  return newItem;
+};
+
+export const updateCartItemQuantity = async (id: string, quantity: number) => {
+  const [updated] = await db
+    .update(cartItems)
+    .set({ quantity })
+    .where(eq(cartItems.id, id))
+    .returning();
+  return updated;
+};
+
+export const removeCartItem = async (id: string) => {
+  await db.delete(cartItems).where(eq(cartItems.id, id));
+};
+
+export const clearCart = async (userId: string) => {
+  await db.delete(cartItems).where(eq(cartItems.userId, userId));
 };
 
 /**

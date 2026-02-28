@@ -82,3 +82,35 @@ export const deleteComment = async ({
 }): Promise<void> => {
   await api.delete(`/comments/${commentId}`);
 };
+
+// Cart API
+export const getCart = async () => {
+  const { data } = await api.get('/cart');
+  return data;
+};
+
+export const addToCart = async (productId: string) => {
+  const { data } = await api.post('/cart', { productId });
+  return data;
+};
+
+export const updateCartItem = async ({
+  id,
+  quantity,
+}: {
+  id: string;
+  quantity: number;
+}) => {
+  const { data } = await api.patch(`/cart/${id}`, { quantity });
+  return data;
+};
+
+export const removeCartItem = async (id: string) => {
+  const { data } = await api.delete(`/cart/${id}`);
+  return data;
+};
+
+export const clearCart = async () => {
+  const { data } = await api.delete('/cart');
+  return data;
+};

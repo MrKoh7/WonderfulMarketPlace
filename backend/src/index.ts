@@ -5,6 +5,7 @@ import { clerkMiddleware } from '@clerk/express';
 import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
 import commentRoutes from './routes/commentRoutes';
+import cartRoutes from './routes/cartRoutes';
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.listen(ENV.PORT, () => {
   console.log(`Server is running on PORT: ${ENV.PORT}`);

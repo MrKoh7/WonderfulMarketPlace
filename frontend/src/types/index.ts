@@ -35,6 +35,7 @@ export interface CommentWithUser extends Comment {
 }
 
 export interface ProductWithUser extends Product {
+  price: string | null;
   user: User | null;
   comments?: CommentWithUser[];
 }
@@ -42,6 +43,7 @@ export interface ProductWithUser extends Product {
 export interface ProductWithDetails extends Product {
   user: User | null;
   comments: CommentWithUser[];
+  price: string | null;
 }
 
 // ─── API response shapes ───
@@ -64,6 +66,7 @@ export interface ProductFormData {
   title: string;
   description: string;
   imageUrl: string;
+  price: string | null;
 }
 
 export interface SyncUserData {

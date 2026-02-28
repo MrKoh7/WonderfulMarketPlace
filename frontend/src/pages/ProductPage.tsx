@@ -4,6 +4,7 @@ import {
   Trash2Icon,
   CalendarIcon,
   UserIcon,
+  ShoppingCartIcon,
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
@@ -88,7 +89,16 @@ const ProductPage = () => {
 
       <div className="card bg-base-300">
         <div className="card-body">
-          <h1 className="card-title text-2xl">{product.title}</h1>
+          <div className="flex items-start justify-between">
+            <h1 className="card-title text-2xl">{product.title}</h1>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-primary">
+                {product.price
+                  ? `RM ${Number(product.price).toFixed(2)}`
+                  : 'Price not set'}
+              </p>
+            </div>
+          </div>
 
           <div className="flex flex-wrap gap-4 text-sm text-base-content/60 my-2">
             <div className="flex items-center gap-1">
