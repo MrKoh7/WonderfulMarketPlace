@@ -81,7 +81,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorised' });
 
     const { id } = req.params as { id: string };
-    const { title, description, imageUrl } = req.body;
+    const { title, description, imageUrl, price } = req.body;
 
     const existingProduct = await queries.getProductById(id);
     if (!existingProduct) {
@@ -98,6 +98,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       title,
       description,
       imageUrl,
+      price,
     });
 
     res.status(200).json(product);

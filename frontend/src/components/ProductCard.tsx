@@ -1,7 +1,9 @@
+import { useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router';
-import { MessageCircleIcon } from 'lucide-react';
+import { MessageCircleIcon, ShoppingCartIcon } from 'lucide-react';
 import type { ProductWithUser } from '../types';
 import type { FC } from 'react';
+import { useAddToCart } from '../hooks/useCart';
 
 interface HighlightTextProps {
   text: string;
@@ -22,6 +24,16 @@ const ProductCard = ({
   HighlightText,
 }: ProductCardProps) => {
   const isNew = new Date(product.createdAt) > oneWeekAgo;
+  const { mutate: addToCart, isPending } = useAddToCart();
+  const { userId } = useAuth();
+
+  const isOwner = userId === product.userId;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product.id);
+  };
 
   return (
     <Link
@@ -48,6 +60,12 @@ const ProductCard = ({
           {product.description}
         </p>
 
+        <div className="font-semibold text-sm mt-1">
+          {product.price
+            ? `RM ${Number(product.price).toFixed(2)}`
+            : 'Price not set'}
+        </div>
+
         <div className="divider my-1"></div>
 
         <div className="flex items-center justify-between">
@@ -71,6 +89,18 @@ const ProductCard = ({
               <MessageCircleIcon className="size-3" />
               <span className="text-xs">{product.comments.length}</span>
             </div>
+          )}
+
+          {!isOwner && (
+            <button
+              onClick={handleAddToCart}
+              disabled={isPending}
+              className="btn btn-primary btn-xs gap-1"
+            >
+              {' '}
+              <ShoppingCartIcon className="size-3" />
+              {isPending ? 'Adding...' : 'Add'}
+            </button>
           )}
         </div>
       </div>

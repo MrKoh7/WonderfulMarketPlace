@@ -5,7 +5,7 @@ import {
   UserButton,
   useAuth,
 } from '@clerk/clerk-react';
-import { ShoppingBagIcon, PlusIcon, UserIcon } from 'lucide-react';
+import { ShoppingBagIcon, PlusIcon, UserIcon, ShoppingCartIcon } from 'lucide-react';
 import ThemeSelector from './ThemeSelector';
 
 const Navbar = () => {
@@ -34,6 +34,10 @@ const Navbar = () => {
               <Link to="/profile" className="btn btn-ghost btn-sm gap-1">
                 <UserIcon className="size-4" />
                 <span className="hidden sm:inline">Profile</span>
+              </Link>
+              <Link to="/cart" className="btn btn-ghost btn-sm gap-1">
+                <ShoppingCartIcon className="size-4" />
+                <span className="hidden sm:inline">Cart</span>
               </Link>
               <UserButton />
             </>

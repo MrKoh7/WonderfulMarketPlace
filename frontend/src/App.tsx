@@ -7,6 +7,7 @@ import EditProductPage from './pages/EditProductPage';
 import { Navigate, Route, Routes } from 'react-router';
 import useAuthRequest from './hooks/useAuthRequest';
 import useUserSync from './hooks/useUserSync';
+import CartPage from './pages/CartPage';
 
 function App() {
   const { isClerkLoaded, isSignedIn } = useAuthRequest();
@@ -34,6 +35,7 @@ function App() {
               path="/edit/:id"
               element={isSignedIn ? <EditProductPage /> : <Navigate to={'/'} />}
             />
+            <Route path="/cart" element={<CartPage />} />
           </Routes>
         </main>
       </div>
