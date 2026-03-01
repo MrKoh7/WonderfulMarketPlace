@@ -8,6 +8,8 @@ import type {
   Comment,
   SyncUserData,
   MyProductsResponse,
+  CartItem,
+  CartResponse,
 } from '../types';
 
 // USERS API
@@ -84,13 +86,13 @@ export const deleteComment = async ({
 };
 
 // Cart API
-export const getCart = async () => {
-  const { data } = await api.get('/cart');
+export const getCart = async (): Promise<CartResponse> => {
+  const { data } = await api.get<CartResponse>('/cart');
   return data;
 };
 
-export const addToCart = async (productId: string) => {
-  const { data } = await api.post('/cart', { productId });
+export const addToCart = async (productId: string): Promise<CartItem> => {
+  const { data } = await api.post<CartItem>('/cart', { productId });
   return data;
 };
 
@@ -100,17 +102,19 @@ export const updateCartItem = async ({
 }: {
   id: string;
   quantity: number;
-}) => {
-  const { data } = await api.patch(`/cart/${id}`, { quantity });
+}): Promise<CartItem> => {
+  const { data } = await api.patch<CartItem>(`/cart/${id}`, { quantity });
   return data;
 };
 
-export const removeCartItem = async (id: string) => {
-  const { data } = await api.delete(`/cart/${id}`);
+export const removeCartItem = async (
+  id: string,
+): Promise<{ message: string }> => {
+  const { data } = await api.delete<{ message: string }>(`/cart/${id}`);
   return data;
 };
 
-export const clearCart = async () => {
-  const { data } = await api.delete('/cart');
+export const clearCart = async (): Promise<{ message: string }> => {
+  const { data } = await api.delete<{ message: string }>('/cart');
   return data;
 };

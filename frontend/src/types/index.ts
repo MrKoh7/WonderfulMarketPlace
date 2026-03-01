@@ -28,6 +28,15 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface CartItem {
+  id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
+  createdAt: string;
+  product: ProductWithUser;
+}
+
 // ─── Composed types (what the API actually returns) ───
 
 export interface CommentWithUser extends Comment {
@@ -58,6 +67,10 @@ export interface PaginatedProducts {
 
 export interface MyProductsResponse {
   products: ProductWithUser[];
+}
+
+export interface CartResponse {
+  items: CartItem[];
 }
 
 // ─── Input types (for create/update mutations) ───
