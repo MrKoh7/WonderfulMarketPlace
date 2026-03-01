@@ -7,6 +7,7 @@ import {
   ImageIcon,
   SparklesIcon,
   TypeIcon,
+  Currency,
 } from 'lucide-react';
 import type { ProductFormData } from '../types';
 
@@ -17,6 +18,7 @@ const CreatePage = () => {
     title: '',
     description: '',
     imageUrl: '',
+    price: null,
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,6 +65,20 @@ const CreatePage = () => {
                 value={formData.imageUrl}
                 onChange={(e) =>
                   setFormData({ ...formData, imageUrl: e.target.value })
+                }
+                required
+              />
+            </label>
+
+            <label className="input input-bordered flex items-center gap-2 bg-base-200">
+              <Currency className="size-4 text-base-content/50" />
+              <input
+                type="number"
+                placeholder="RM"
+                className="grow"
+                value={formData.price ?? ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value || null })
                 }
                 required
               />

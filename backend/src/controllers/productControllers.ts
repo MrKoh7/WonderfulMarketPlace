@@ -51,12 +51,12 @@ export const createProduct = async (req: Request, res: Response) => {
     const { userId } = getAuth(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorised' });
 
-    const { title, description, imageUrl } = req.body;
+    const { title, description, imageUrl, price } = req.body;
 
-    if (!title || !description || !imageUrl) {
+    if (!title || !description || !imageUrl || !price) {
       res
         .status(400)
-        .json({ error: 'Title, description and imageUrl are required!' });
+        .json({ error: 'Title, description, imageUrl and price are required!' });
       return;
     }
 
@@ -64,6 +64,7 @@ export const createProduct = async (req: Request, res: Response) => {
       title,
       description,
       imageUrl,
+      price,
       userId,
     });
 

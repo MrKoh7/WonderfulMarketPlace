@@ -4,7 +4,6 @@ import {
   Trash2Icon,
   CalendarIcon,
   UserIcon,
-  ShoppingCartIcon,
 } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
