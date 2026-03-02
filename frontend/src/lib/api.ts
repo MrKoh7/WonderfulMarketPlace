@@ -10,6 +10,10 @@ import type {
   MyProductsResponse,
   CartItem,
   CartResponse,
+  CreatePaymentIntentResponse,
+  OnboardingStatusResponse,
+  OnboardingUrlResponse,
+  Order,
 } from '../types';
 
 // USERS API
@@ -116,5 +120,31 @@ export const removeCartItem = async (
 
 export const clearCart = async (): Promise<{ message: string }> => {
   const { data } = await api.delete<{ message: string }>('/cart');
+  return data;
+};
+
+// Payments API
+export const createPaymentIntent = async (
+  sellerId: string,
+): Promise<CreatePaymentIntentResponse> => {
+  const { data } = await api.post<CreatePaymentIntentResponse>(
+    '/payments/create-payment-intent',
+    { sellerId },
+  );
+  return data;
+};
+
+export const onboardSeller = async (): Promise<OnboardingUrlResponse> => {
+  const { data } = await api.post<OnboardingUrlResponse>('/payments/onboard');
+  return data;
+};
+
+export const getOnboardingStatus = async (): Promise<OnboardingStatusResponse> => {
+  const { data } = await api.get<OnboardingStatusResponse>('/payments/onboard/status');
+  return data;
+};
+
+export const getMyOrders = async (): Promise<Order[]> => {
+  const { data } = await api.get<Order[]>('/payments/orders');
   return data;
 };

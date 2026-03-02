@@ -21,3 +21,7 @@ dist-ssr/
 .vscode/
 .idea/
 .DS_Store
+
+# stripe.exe
+stripe.exe
+*.exe

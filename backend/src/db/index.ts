@@ -14,12 +14,17 @@ if (!ENV.DATABASE_URL) {
  * 1) Opening/Closing connections is slow, reuse existing connections rather than
  * creating a new connection for each request
  * 2) Database limits concurrent connections, a pool manages a fixed number of connections and
- * shares them across requests, 
+ * shares them across requests,
  * default : 10 connections
  */
 
 // initialise PostgreSQL connection pool
-const pool = new Pool({ connectionString: ENV.DATABASE_URL });
+const pool = new Pool({
+  connectionString: ENV.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
 
 // show successful first connection
 pool.on('connect', () => {

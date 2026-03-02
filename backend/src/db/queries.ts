@@ -8,6 +8,8 @@ import {
   type NewComment,
   type NewProduct,
   cartItems,
+  orders,
+  orderItems
 } from './schema';
 
 /**
@@ -156,9 +158,7 @@ export const deleteProductById = async (id: string) => {
 export const getCartItemsByUserId = async (userId: string) => {
   return db.query.cartItems.findMany({
     where: eq(cartItems.userId, userId),
-    with: {
-      product: true,
-    },
+    with: { product: { with: { user: true } } }
   });
 };
 
@@ -231,4 +231,95 @@ export const getCommentById = async (id: string) => {
     where: eq(comments.id, id),
     with: { user: true },
   });
+};
+
+/**
+ *
+ * Order Queries
+ *
+ */
+
+export const createOrder = async (data: {
+  buyerId: string;
+  sellerId: string;
+  stripePaymentIntentId: string;
+  totalAmount: string;
+  platformFee: string;
+  items: {
+    productId: string;
+    quantity: number;
+    priceAtPurchase: string;
+  }[]; 
+}) => {
+  // Create the order and its items in a single transaction
+  // If any part fails, the whole thing rolls back
+  return await db.transaction(async (tx) => {
+    const [order] = await tx
+      .insert(orders)
+      .values({
+        buyerId: data.buyerId,
+        sellerId: data.sellerId,
+        stripePaymentIntentId: data.stripePaymentIntentId,
+        status: 'pending',
+        totalAmount: data.totalAmount,
+        platformFee: data.platformFee,
+      })
+      .returning();
+
+    await tx.insert(orderItems).values(
+      data.items.map((item) => ({
+        orderId: order.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        priceAtPurchase: item.priceAtPurchase,
+      })),
+    );
+
+    return order;
+  });
+};
+
+export const updateOrderStatus = async (
+  stripePaymentIntentId: string,
+  status: string,
+) => {
+  const [order] = await db
+    .update(orders)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(orders.stripePaymentIntentId, stripePaymentIntentId))
+    .returning();
+  return order;
+};
+
+export const getOrdersByBuyerId = async (buyerId: string) => {
+  return db.query.orders.findMany({
+    where: eq(orders.buyerId, buyerId),
+    with: {
+      orderItems: {
+        with: { product: true },
+      },
+    },
+    orderBy: (orders, { desc }) => [desc(orders.createdAt)],
+  });
+};
+
+export const updateUserStripeAccount = async (
+  userId: string,
+  stripeAccountId: string,
+) => {
+  const [user] = await db
+    .update(users)
+    .set({ stripeAccountId })
+    .where(eq(users.id, userId))
+    .returning();
+  return user;
+};
+
+export const completeUserStripeOnboarding = async (userId: string) => {
+  const [user] = await db
+    .update(users)
+    .set({ stripeOnboardingComplete: true })
+    .where(eq(users.id, userId))
+    .returning();
+  return user;
 };

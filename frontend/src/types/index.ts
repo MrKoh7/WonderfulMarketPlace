@@ -37,6 +37,29 @@ export interface CartItem {
   product: ProductWithUser;
 }
 
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  priceAtPurchase: string;
+  createdAt: string;
+  product?: ProductWithUser;
+}
+
+export interface Order {
+  id: string;
+  buyerId: string;
+  sellerId: string;
+  stripePaymentIntentId: string;
+  status: 'pending' | 'paid' | 'failed';
+  totalAmount: string;
+  platformFee: string;
+  createdAt: string;
+  updatedAt: string;
+  orderItems?: OrderItem[];
+}
+
 // ─── Composed types (what the API actually returns) ───
 
 export interface CommentWithUser extends Comment {
@@ -73,6 +96,18 @@ export interface CartResponse {
   items: CartItem[];
 }
 
+export interface CreatePaymentIntentResponse {
+  clientSecret: string;
+}
+
+export interface OnboardingStatusResponse {
+  complete: boolean;
+}
+
+export interface OnboardingUrlResponse {
+  url: string;
+}
+
 // ─── Input types (for create/update mutations) ───
 
 export interface ProductFormData {
@@ -86,4 +121,12 @@ export interface SyncUserData {
   email: string | undefined;
   name: string | null;
   imageUrl: string;
+}
+
+// ─── Cart grouped by seller (for checkout flow) ───
+
+export interface SellerGroup {
+  seller: User;
+  items: CartItem[];
+  total: number;
 }
