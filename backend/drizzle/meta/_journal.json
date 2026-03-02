@@ -8,6 +8,13 @@
       "when": 1772254625270,
       "tag": "0000_white_squadron_supreme",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772355436931,
+      "tag": "0001_keen_nitro",
+      "breakpoints": true
     }
   ]
 }

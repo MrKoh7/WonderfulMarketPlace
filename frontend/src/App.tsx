@@ -4,10 +4,11 @@ import ProductPage from './pages/ProductPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatePage from './pages/CreatePage';
 import EditProductPage from './pages/EditProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import { Navigate, Route, Routes } from 'react-router';
 import useAuthRequest from './hooks/useAuthRequest';
 import useUserSync from './hooks/useUserSync';
-import CartPage from './pages/CartPage';
 
 function App() {
   const { isClerkLoaded, isSignedIn } = useAuthRequest();
@@ -36,6 +37,10 @@ function App() {
               element={isSignedIn ? <EditProductPage /> : <Navigate to={'/'} />}
             />
             <Route path="/cart" element={<CartPage />} />
+            <Route
+              path="/checkout/:sellerId"
+              element={isSignedIn ? <CheckoutPage /> : <Navigate to={'/'} />}
+            />
           </Routes>
         </main>
       </div>

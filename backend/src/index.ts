@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes';
 import productRoutes from './routes/productRoutes';
 import commentRoutes from './routes/commentRoutes';
 import cartRoutes from './routes/cartRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 
 const app = express();
 
@@ -15,9 +16,15 @@ app.use(
     credentials: true,
   }),
 );
+
+// !!!!! WEBHOOK MUST BE REGISTERED BEFORE express.json()
+// Stripe webhook needs raw buffer to verify signature
+// If express.json() runs first, the raw body is destroyed and verification fails
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use(clerkMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 app.get('/', (req, res) => {
   res.json({
@@ -35,6 +42,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.listen(ENV.PORT, () => {
   console.log(`Server is running on PORT: ${ENV.PORT}`);
