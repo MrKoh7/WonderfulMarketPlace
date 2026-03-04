@@ -10,11 +10,16 @@ import {
 import { useCart } from '../hooks/useCart';
 import { createPaymentIntent } from '../lib/api';
 import type { CartItem, SellerGroup } from '../types';
+import {
+  calculateTotal,
+  calculatePlatformFee,
+  formatPrice,
+} from '../lib/checkoutUtils';
 
 // Load Stripe outside component to avoid recreating on every render
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// ── Inner form component — must be inside <Elements> to use useStripe ────────
+// Inner form component must be inside <Elements> to use useStripe
 const CheckoutForm = ({ group }: { group: SellerGroup }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -77,7 +82,7 @@ const CheckoutForm = ({ group }: { group: SellerGroup }) => {
     setIsProcessing(false);
   };
 
-  // ── Success state ─────────────────────────────────────────────────────────
+  // Success state
   if (succeeded) {
     return (
       <div className="text-center py-20">
@@ -92,18 +97,15 @@ const CheckoutForm = ({ group }: { group: SellerGroup }) => {
     );
   }
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // Loading state
   if (isLoadingIntent) {
     return (
-      <div className="flex justify-center p-10">
-        Initialising payment...
-      </div>
+      <div className="flex justify-center p-10">Initialising payment...</div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-
       {/* Order summary */}
       <div className="bg-base-200 rounded-xl p-4">
         <h2 className="font-semibold text-lg mb-3">Order Summary</h2>
@@ -124,11 +126,11 @@ const CheckoutForm = ({ group }: { group: SellerGroup }) => {
         <div className="border-t border-base-300 mt-3 pt-3 flex flex-col gap-1">
           <div className="flex justify-between text-sm text-base-content/60">
             <span>Platform fee (5%)</span>
-            <span>RM {(group.total * 0.05).toFixed(2)}</span>
+            <span>RM {formatPrice(calculatePlatformFee(group.total))}</span>
           </div>
           <div className="flex justify-between font-bold text-lg">
             <span>Total</span>
-            <span className="text-primary">RM {group.total.toFixed(2)}</span>
+            <span className="text-primary">RM {formatPrice(group.total)}</span>
           </div>
         </div>
       </div>
@@ -178,7 +180,7 @@ const CheckoutForm = ({ group }: { group: SellerGroup }) => {
         {isProcessing ? (
           <span className="loading loading-spinner loading-sm" />
         ) : (
-          `Pay RM ${group.total.toFixed(2)}`
+          `Pay RM ${formatPrice(group.total)}`
         )}
       </button>
 
@@ -193,7 +195,7 @@ const CheckoutForm = ({ group }: { group: SellerGroup }) => {
   );
 };
 
-// ── Outer wrapper — provides Stripe context to the form ───────────────────────
+// ── Outer wrapper — provides Stripe context to the form
 const CheckoutPage = () => {
   const { sellerId } = useParams<{ sellerId: string }>();
   const navigate = useNavigate();
@@ -202,9 +204,7 @@ const CheckoutPage = () => {
   const items: CartItem[] = data?.items ?? [];
 
   // Build the seller group for this specific seller
-  const sellerItems = items.filter(
-    (item) => item.product.userId === sellerId,
-  );
+  const sellerItems = items.filter((item) => item.product.userId === sellerId);
   const seller = sellerItems[0]?.product.user;
 
   const group: SellerGroup | null =
@@ -212,11 +212,7 @@ const CheckoutPage = () => {
       ? {
           seller,
           items: sellerItems,
-          total: sellerItems.reduce(
-            (sum, item) =>
-              sum + Number(item.product.price ?? 0) * item.quantity,
-            0,
-          ),
+          total: calculateTotal(sellerItems),
         }
       : null;
 
