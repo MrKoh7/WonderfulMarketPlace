@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { getAuth } from '@clerk/express';
 import * as queries from '../db/queries';
+import { canAddToCart } from '../utils/cartLogic';
 
 // GET current user's cart
 export const getCart = async (req: Request, res: Response) => {
@@ -29,10 +30,8 @@ export const addToCart = async (req: Request, res: Response) => {
     const product = await queries.getProductById(productId);
     if (!product) return res.status(404).json({ error: 'Product not found' });
 
-    if (product.userId === userId) {
-      return res
-        .status(403)
-        .json({ error: 'You cannot add your own product to cart' });
+    if(!canAddToCart(userId, product.userId)) {
+      return res.status(403).json({error: 'You cannot add your own product to cart'})
     }
 
     const item = await queries.addToCart(userId, productId);
