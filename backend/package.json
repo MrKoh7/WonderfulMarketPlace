@@ -17,24 +17,24 @@
   "description": "",
   "dependencies": {
     "@clerk/express": "^1.7.60",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.15.6",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "express": "^5.2.1",
     "pg": "^8.16.3",
-    "stripe": "^20.4.0"
+    "stripe": "^20.4.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/pg": "^8.15.6",
     "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^4.0.18",
     "drizzle-kit": "^0.31.7",
     "nodemon": "^3.1.11",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }
