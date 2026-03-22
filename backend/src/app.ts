@@ -10,9 +10,19 @@ import paymentRoutes from './routes/paymentRoutes';
 
 const app = express();
 
+const allowedOrigins = [ENV.FRONTEND_URL, 'http://localhost:5173'].filter(
+  Boolean,
+) as string[];
+
 app.use(
   cors({
-    origin: ENV.FRONTEND_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
     credentials: true,
   }),
 );
@@ -26,11 +36,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to WonderfulMarketPlace API',
-    endpoints: {
-      uses: '/api/users',
-      products: '/api/products',
-      comments: '/api/comments',
-    },
   });
 });
 
@@ -40,4 +45,4 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentRoutes);
 
-export default app; 
+export default app;
