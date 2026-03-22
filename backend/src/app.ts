@@ -33,10 +33,8 @@ app.use(clerkMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to WonderfulMarketPlace API',
-  });
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.use('/api/users', userRoutes);
