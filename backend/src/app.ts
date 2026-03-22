@@ -14,6 +14,15 @@ const allowedOrigins = [ENV.FRONTEND_URL, 'http://localhost:5173'].filter(
   Boolean,
 ) as string[];
 
+// Support both GET and HEAD for UptimeRobot
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+app.head('/health', (_req, res) => {
+  res.status(200).end();
+});
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -33,14 +42,6 @@ app.use(clerkMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Support both GET and HEAD for UptimeRobot
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-app.head('/health', (_req, res) => {
-  res.status(200).end();
-});
 
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
