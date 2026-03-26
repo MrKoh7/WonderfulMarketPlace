@@ -9,4 +9,4 @@ export { ProductCardSkeleton } from './ProductCardSkeleton';
 export { ProductDetailSkeleton } from './ProductDetailSkeleton';
 export { MyListingsRowSkeleton } from './MyListingsRowSkeleton';
 export { NavbarUserSkeleton } from './NavbarUserSkeleton';
-export { RefetchBar } from './RefetchBar';
+
