@@ -10,10 +10,13 @@ import { useAuth } from '@clerk/clerk-react';
 import { useProduct, useDeleteProduct } from '../hooks/useProducts';
 import { useParams, Link, useNavigate } from 'react-router';
 import { ProductDetailSkeleton } from '../components/ui/skeletons';
+import { useAddToCart } from '../hooks/useCart';
+import { ShoppingCartIcon } from 'lucide-react';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const { userId } = useAuth();
+  const { mutate: addToCart, isPending } = useAddToCart();
   const navigate = useNavigate();
 
   const { data: product, isLoading, error } = useProduct(id);
@@ -26,6 +29,11 @@ const ProductPage = () => {
         onSuccess: () => navigate('/'),
       });
     }
+  };
+
+  const handleAddToCart = () => {
+    if (!id) return;
+    addToCart(id);
   };
 
   if (isLoading) return <ProductDetailSkeleton />;
@@ -134,6 +142,16 @@ const ProductPage = () => {
                 </div>
               </div>
             </>
+          )}
+
+          {!isOwner && userId && (
+            <button
+              onClick={handleAddToCart}
+              className="btn btn-primary absolute right-8 bottom-7"
+            >
+              <ShoppingCartIcon className="size-4" />
+              {isPending ? 'Adding...' : 'Add to Cart'}
+            </button>
           )}
         </div>
       </div>

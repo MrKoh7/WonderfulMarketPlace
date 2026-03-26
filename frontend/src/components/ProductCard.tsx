@@ -91,7 +91,7 @@ const ProductCard = ({
             </div>
           )}
 
-          {!isOwner && (
+          {!isOwner && userId &&(
             <button
               onClick={handleAddToCart}
               disabled={isPending}
