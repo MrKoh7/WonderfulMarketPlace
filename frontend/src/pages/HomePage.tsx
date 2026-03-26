@@ -1,14 +1,17 @@
 import { useCallback } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useProducts } from '../hooks/useProducts';
 import { PackageIcon, SparklesIcon, SearchXIcon } from 'lucide-react';
 import { Link } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
-import { SignInButton } from '@clerk/clerk-react';
+import { SignInButton, useAuth } from '@clerk/clerk-react';
 
 function HomePage() {
+  const { isSignedIn } = useAuth();
+  const navigate = useNavigate();
+
   // Sync search term with URL query params (?search=...)
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') || '';
@@ -67,12 +70,23 @@ function HomePage() {
             <p className="py-4 text-base-content/60">
               Upload, discover, and connect with creators.
             </p>
-            <SignInButton mode="modal">
-              <button className="btn btn-primary">
+            
+            {isSignedIn ? (
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate('/create')}
+              >
                 <SparklesIcon className="size-4" />
                 Start Selling
               </button>
-            </SignInButton>
+            ) : (
+              <SignInButton mode="modal">
+                <button className="btn btn-primary">
+                  <SparklesIcon className="size-4" />
+                  Start Selling
+                </button>
+              </SignInButton>
+            )}
           </div>
         </div>
       </div>
