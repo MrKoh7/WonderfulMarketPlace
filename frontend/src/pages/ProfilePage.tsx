@@ -1,7 +1,7 @@
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useMyProducts, useDeleteProduct } from '../hooks/useProducts';
 import { useMyOrders } from '../hooks/useOrder';
-import LoadingSpinner from '../components/LoadingSpinner';
+
 import {
   PlusIcon,
   PackageIcon,
@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import { onboardSeller, getOnboardingStatus } from '../lib/api';
 import type { Order } from '../types';
+import { MyListingsRowSkeleton } from '../components/ui/skeletons';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -67,7 +68,13 @@ const ProfilePage = () => {
     if (confirm('Delete this product?')) deleteProduct.mutate(id);
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return (
+    <div className='grid gap-4'>
+      {Array.from({ length: 4}).map((_, i) => (
+        <MyListingsRowSkeleton key={i} />
+      ))}
+    </div>
+  )
 
   return (
     <div className="space-y-6">
@@ -81,7 +88,7 @@ const ProfilePage = () => {
         </Link>
       </div>
 
-      {/* ── Seller Payment Setup Section ──────────────────────────────────── */}
+      {/* Seller Payment Setup Section */}
       <div className="card bg-base-300">
         <div className="card-body p-4">
           <div className="flex items-center justify-between">
@@ -133,7 +140,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* ── Stats ─────────────────────────────────────────────────────────── */}
+      {/* Stats  */}
       <div className="stats bg-base-300 w-full">
         <div className="stat">
           <div className="stat-title">Total Products</div>
@@ -145,7 +152,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* ── Purchase History ──────────────────────────────────────────────── */}
+      {/* Purchase History  */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <ShoppingBagIcon className="size-5" />
@@ -239,7 +246,7 @@ const ProfilePage = () => {
         )}
       </div>
 
-      {/* ── Products list ─────────────────────────────────────────────────── */}
+      {/* Products list  */}
       {products.length === 0 ? (
         <div className="card bg-base-300">
           <div className="card-body items-center text-center py-16">

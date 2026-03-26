@@ -2,3 +2,52 @@
 @plugin "daisyui" {
   themes: all;
 }
+
+/* Skeleton shimmer 
+   Left-to-right gradient sweep using DaisyUI's base color tokens so the
+   animation automatically respects the active theme (light, dark, etc.).
+   `prefers-reduced-motion` collapses it to a static muted block.
+*/
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-base-200) 0%,
+    var(--color-base-100) 50%,
+    var(--color-base-200) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--color-base-200);
+  }
+}
+
+/* Refetch progress bar 
+   Indeterminate sliding bar shown during background refetches (isFetching).
+*/
+@keyframes refetch-slide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.refetch-bar-inner {
+  animation: refetch-slide 1.4s ease-in-out infinite;
+  width: 25%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refetch-bar-inner {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}

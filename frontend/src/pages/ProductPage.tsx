@@ -5,11 +5,11 @@ import {
   CalendarIcon,
   UserIcon,
 } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import CommentsSection from '../components/CommentsSection';
 import { useAuth } from '@clerk/clerk-react';
 import { useProduct, useDeleteProduct } from '../hooks/useProducts';
 import { useParams, Link, useNavigate } from 'react-router';
+import { ProductDetailSkeleton } from '../components/ui/skeletons';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +28,7 @@ const ProductPage = () => {
     }
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <ProductDetailSkeleton />;
 
   if (error || !product) {
     return (
