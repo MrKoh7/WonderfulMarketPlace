@@ -8,24 +8,107 @@ import {
   SparklesIcon,
   TypeIcon,
   Currency,
+  Wand2Icon,
 } from 'lucide-react';
 import type { ProductFormData } from '../types';
+import { useAuth } from '@clerk/clerk-react';
 
 const CreatePage = () => {
   const navigate = useNavigate();
   const createProduct = useCreateProduct();
+  const { getToken } = useAuth();
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
     description: '',
     imageUrl: '',
     price: null,
   });
+  const [aiStatus, setAiStatus] = useState<
+    'idle' | 'loading' | 'streaming' | 'error'
+  >('idle');
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     createProduct.mutate(formData, {
       onSuccess: () => navigate('/'),
     });
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!formData.title.trim()) return;
+    setAiStatus('loading');
+    setFormData((prev) => ({ ...prev, description: '' }));
+
+    try {
+      const token = await getToken();
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/ai/generate-description`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productTitle: formData.title }),
+        },
+      );
+      if (!res.ok) throw new Error('Generation Failed');
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      setAiStatus('streaming');
+      
+      // Safety timeout — if no data arrives for 10s, assume stream ended silently
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+      const resetTimeout = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          reader.cancel();
+          setAiStatus('idle');
+        }, 100000);
+      };
+
+      resetTimeout();
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          clearTimeout(timeoutId);
+          setAiStatus('idle');
+          break;
+        }
+
+        resetTimeout(); // reset on every chunk received
+
+        const lines = decoder.decode(value).split('\n');
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') {
+            clearTimeout(timeoutId);
+            setAiStatus('idle');
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) throw new Error(parsed.error);
+            if (parsed.token) {
+              setFormData((prev) => ({
+                ...prev,
+                description: prev.description + parsed.token,
+              }));
+            }
+          } catch {}
+        }
+      }
+    } catch (error) {
+      setAiStatus('error');
+    }
   };
 
   return (
@@ -98,18 +181,49 @@ const CreatePage = () => {
             <div className="form-control">
               <div className="flex items-start gap-2 p-3 rounded-box bg-base-200 border border-base-300">
                 <FileTextIcon className="size-4 text-base-content/50 mt-1" />
-                <textarea
-                  placeholder="Description"
-                  className="grow bg-transparent resize-none focus:outline-none min-h-24"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  required
-                />
+                <div className="relative grow">
+                  <textarea
+                    placeholder={
+                      aiStatus === 'loading'
+                        ? 'Generating...'
+                        : aiStatus === 'error'
+                          ? 'Generation failed. Try again.'
+                          : 'Description'
+                    }
+                    className="w-full bg-transparent resize-none focus:outline-none min-h-24"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    disabled={
+                      aiStatus === 'loading' || aiStatus === 'streaming'
+                    }
+                    required
+                  />
+
+                  {formData.title.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleGenerateDescription}
+                      disabled={
+                        aiStatus === 'loading' || aiStatus === 'streaming'
+                      }
+                      className="absolute bottom-0 right-0 btn btn-ghost btn-xs gap-1 text-primary"
+                      title="Generate description with AI"
+                    >
+                      {aiStatus === 'loading' || aiStatus === 'streaming' ? (
+                        <span className="loading loading-spinner loading-xs" />
+                      ) : (
+                        <>
+                          <Wand2Icon className="size-3" />
+                          <span className="text-xs">AI</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
             {createProduct.isError && (
               <div role="alert" className="alert alert-error alert-sm">
                 <span>Failed to create. Try again.</span>

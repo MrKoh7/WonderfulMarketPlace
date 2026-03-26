@@ -7,6 +7,7 @@ import productRoutes from './routes/productRoutes';
 import commentRoutes from './routes/commentRoutes';
 import cartRoutes from './routes/cartRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import aiRoutes from './routes/aiRoutes';
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(
       }
     },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
 
@@ -42,11 +44,11 @@ app.use(clerkMiddleware());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/ai', aiRoutes);
 
 export default app;
