@@ -27,7 +27,7 @@ const SearchBar = ({ value, onChange, isFetching }: SearchBarProps) => {
 
   return (
     <div className="relative w-full max-w-md">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 z-10">
         {isFetching ? (
           <LoaderIcon className="size-4 animate-spin" />
         ) : (
