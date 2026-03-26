@@ -76,7 +76,7 @@ const ProductPage = () => {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-1 gap-2">
         <figure className="p-4">
           <img
             src={product.imageUrl}
