@@ -65,6 +65,7 @@ export const createProduct = async (data: NewProduct) => {
 
 export const getAllProduct = async () => {
   return db.query.products.findMany({
+    columns: { embedding: false },
     with: { user: true },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
     // get latest products first
@@ -86,6 +87,9 @@ export const searchProducts = async (
 
   const data = await db.query.products.findMany({
     where: whereCondition,
+    columns: {
+      embedding: false,
+    },
     with: { user: true },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
     offset: offset,
@@ -103,6 +107,7 @@ export const searchProducts = async (
 export const getProductById = async (id: string) => {
   return db.query.products.findFirst({
     where: eq(products.id, id),
+    columns: { embedding: false },
     with: {
       user: true,
       comments: {
@@ -116,6 +121,7 @@ export const getProductById = async (id: string) => {
 export const getProductsByUserId = async (userId: string) => {
   return db.query.products.findMany({
     where: eq(products.userId, userId),
+    columns: { embedding: false },
     with: { user: true },
     orderBy: (products, { desc }) => [desc(products.createdAt)],
   });
@@ -326,25 +332,40 @@ export const completeUserStripeOnboarding = async (userId: string) => {
 
 // Semantic Search Queries
 export const searchProductsByEmbedding = async (queryEmbedding: number[]) => {
-  const vectorString = JSON.stringify(queryEmbedding);
+  const vectorString = `[${queryEmbedding.join(',')}]`;
 
-  const results = await db.execute(sql`
-    SELECT p.id, p.title, p.description, p.price, p.image_url, p.user_id, p.created_at,
-    1 - (p.embedding <=> ${vectorString}::vector) as similarity, 
-    json_build_object(
-    'id', u.id,
-    'name', u.name,
-    'imageUrl', u.image_url
-    ) AS user
-     FROM product p
-     JOIN users u ON p.user_id = u.id
-     WHERE p.embedding IS NOT NULL
-     AND 1 - (p.embedding <=> ${vectorString}:: vector) > 0.5
-     ORDER BY p.embedding <=> ${vectorString}:: vector
-     LIMIT 12
+  console.log('[Query] Vector length:', queryEmbedding.length);
+
+  try {
+    const results = await db.execute(sql`
+      SELECT
+        p.id,
+        p.title,
+        p.description,
+        p.price,
+        p.image_url,
+        p.user_id,
+        p.created_at,
+        1 - (p.embedding <=> ${vectorString}::vector) AS similarity,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'imageUrl', u.image_url
+        ) AS user
+      FROM product p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.embedding IS NOT NULL
+        AND 1 - (p.embedding <=> ${vectorString}::vector) > 0.35
+      ORDER BY p.embedding <=> ${vectorString}::vector
+      LIMIT 12
     `);
 
-  return results.rows;
+    console.log('[Query] Row count:', results.rows.length);
+    return results.rows;
+  } catch (err: any) {
+    console.error('[Query] Raw SQL error:', err.message);
+    throw err;
+  }
 };
 
 // Updates a single product's embedding vector - called on create/update
@@ -365,5 +386,6 @@ export const updateProductEmbedding = async (
 export const getProductWithoutEmbedding = async () => {
   return db.query.products.findMany({
     where: isNull(products.embedding),
+    columns: { embedding: false },
   });
 };

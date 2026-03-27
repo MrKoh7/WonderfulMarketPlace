@@ -14,6 +14,7 @@ import type {
   Product,
   MyProductsResponse,
 } from '../types';
+import { semanticSearchProducts } from '../lib/api';
 
 // Accepts optional search term — queryKey includes search so TanStack Query
 // automatically refetches when the debounced search value changes
@@ -68,5 +69,15 @@ export const useUpdateProduct = () => {
       queryClient.invalidateQueries({ queryKey: ['product', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['myProducts'] });
     },
+  });
+};
+
+export const useSemanticSearch = (query: string) => {
+  return useQuery<ProductWithDetails[], Error>({
+    queryKey: ['semantic-search', query],
+    queryFn: () => semanticSearchProducts(query),
+    enabled: query.trim().length >= 3,
+    staleTime: 0,
+    gcTime: 0
   });
 };

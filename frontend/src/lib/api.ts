@@ -139,12 +139,37 @@ export const onboardSeller = async (): Promise<OnboardingUrlResponse> => {
   return data;
 };
 
-export const getOnboardingStatus = async (): Promise<OnboardingStatusResponse> => {
-  const { data } = await api.get<OnboardingStatusResponse>('/payments/onboard/status');
-  return data;
-};
+export const getOnboardingStatus =
+  async (): Promise<OnboardingStatusResponse> => {
+    const { data } = await api.get<OnboardingStatusResponse>(
+      '/payments/onboard/status',
+    );
+    return data;
+  };
 
 export const getMyOrders = async (): Promise<Order[]> => {
   const { data } = await api.get<Order[]>('/payments/orders');
   return data;
+};
+
+export const semanticSearchProducts = async (
+  query: string,
+): Promise<ProductWithDetails[]> => {
+  const { data } = await api.get<any[]>('/ai/semantic-search', {
+    params: { q: query },
+  });
+
+  // Raw SQL returns snake_case — map to camelCase to match ProductWithDetails type
+  return data.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    price: item.price,
+    imageUrl: item.image_url,
+    userId: item.user_id,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at ?? item.created_at,
+    user: item.user,
+    comments: [],
+  }));
 };

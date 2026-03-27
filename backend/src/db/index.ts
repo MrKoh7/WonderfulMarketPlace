@@ -21,9 +21,11 @@ if (!ENV.DATABASE_URL) {
 // initialise PostgreSQL connection pool
 const pool = new Pool({
   connectionString: ENV.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
+  max: 3,
+  idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 10000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 });
 
 // show successful first connection

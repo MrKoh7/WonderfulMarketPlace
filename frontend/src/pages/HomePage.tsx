@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useProducts } from '../hooks/useProducts';
+import { useProducts, useSemanticSearch } from '../hooks/useProducts';
 import { PackageIcon, SparklesIcon, SearchXIcon } from 'lucide-react';
-import { Link } from 'react-router';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
@@ -51,6 +50,11 @@ function HomePage() {
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
 
+  const semanticQuery =
+    total === 0 && searchTerm.trim().length >= 3 ? searchTerm : '';
+  const { data: semanticResults, isFetching: isSemanticFetching } =
+    useSemanticSearch(semanticQuery);
+
   return (
     <div className="space-y-10">
       <div className="hero bg-linear-to-br from-base-300 via-base-200 to-base-300 rounded-box overflow-hidden">
@@ -70,7 +74,7 @@ function HomePage() {
             <p className="py-4 text-base-content/60">
               Upload, discover, and connect with creators.
             </p>
-            
+
             {isSignedIn ? (
               <button
                 className="btn btn-primary"
@@ -122,28 +126,54 @@ function HomePage() {
           </div>
         ) : total === 0 ? (
           searchTerm ? (
-            // Empty state specifically for search with no results
-            <div className="card bg-base-300">
-              <div className="card-body items-center text-center py-16">
-                <SearchXIcon className="size-16 text-base-content/20" />
-                <h3 className="card-title text-base-content/50">
-                  No results found
-                </h3>
-                <p className="text-base-content/40 text-sm">
-                  No products match "
-                  <span className="font-semibold">{searchTerm}</span>". Try a
-                  different search term.
-                </p>
-                <button
-                  onClick={() => setSearchParams({})}
-                  className="btn btn-primary btn-sm mt-2"
-                >
-                  Clear Search
-                </button>
-              </div>
+            // searchTerm exists but no keyword results — show semantic suggestions
+            <div className="space-y-6">
+              {/* Only show "no results" card if semantic search also found nothing */}
+              {!isSemanticFetching &&
+                (!semanticResults || semanticResults.length === 0) && (
+                  <div className="card bg-base-300">
+                    <div className="card-body items-center text-center py-10">
+                      <SearchXIcon className="size-16 text-base-content/20" />
+                      <h3 className="card-title text-base-content/50">
+                        No results found
+                      </h3>
+                      <p className="text-base-content/40 text-sm">
+                        No products match "
+                        <span className="font-semibold">{searchTerm}</span>".
+                      </p>
+                      <button
+                        onClick={() => setSearchParams({})}
+                        className="btn btn-primary btn-sm mt-2"
+                      >
+                        Clear Search
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              {/* Semantic search suggestions */}
+              {isSemanticFetching ? (
+                <LoadingSpinner />
+              ) : semanticResults && semanticResults.length > 0 ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-base-content/60 mb-3 flex items-center gap-2">
+                    <SparklesIcon className="size-4 text-primary" />
+                    AI-powered suggestions for "{searchTerm}"
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {semanticResults.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        searchTerm={searchTerm}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : (
-            // Empty state when there are no products at all
+            // No searchTerm and no products, truly empty catalogue
             <div className="card bg-base-300">
               <div className="card-body items-center text-center py-16">
                 <PackageIcon className="size-16 text-base-content/20" />
@@ -153,9 +183,6 @@ function HomePage() {
                 <p className="text-base-content/40 text-sm">
                   Be the first to share something!
                 </p>
-                <Link to="/create" className="btn btn-primary btn-sm mt-2">
-                  Create Product
-                </Link>
               </div>
             </div>
           )
