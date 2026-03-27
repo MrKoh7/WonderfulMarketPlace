@@ -13,10 +13,10 @@ const openaiClient = new OpenAI({
 });
 
 const MODEL_CASCADE = [
-  'nvidia/nemotron-3-super-120b-a12b:free',
+  'qwen/qwen-turbo',
+  'meta-llama/llama-3.1-8b-instruct',
   'nvidia/nemotron-nano-12b-v2-vl:free',
-  'openai/gpt-oss-120b:free',
-  'stepfun/step-3.5-flash:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
 ];
 
 export const generateDescription = async (req: Request, res: Response) => {
