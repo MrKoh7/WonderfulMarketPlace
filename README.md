@@ -2,7 +2,7 @@
 
 A full-stack marketplace web application where users can buy and sell products, powered by AI-assisted content generation and semantic search. Built with a modern TypeScript stack across both frontend and backend.
 
-🔗 **Live Demo:** [wonderful-marketplace.vercel.app](https://wonderful-market-place.vercel.app/) 
+🔗 **Live Demo:** [wonderful-marketplace.vercel.app](https://wonderful-market-place.vercel.app/)
 
 ---
 
@@ -14,9 +14,6 @@ A full-stack marketplace web application where users can buy and sell products, 
 - [Architecture & Design Decisions](#architecture--design-decisions)
 - [Database Schema](#database-schema)
 - [AI Integration](#ai-integration)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [API Reference](#api-reference)
 - [Deployment](#deployment)
 
 ---
@@ -33,7 +30,7 @@ WonderfulMarketplace is a peer-to-peer marketplace where any registered user can
 - **Dual-role users** — every account can buy or sell; no admin role required. Sellers are prevented from purchasing their own products.
 - **Listings management** — sellers can create, edit, and delete their own products, with full ownership enforcement on every mutation.
 - **Product comments** — authenticated users can leave comments on any product listing.
-- **Search, filter & pagination** — keyword search, category/price filters, and URL-synced pagination so results are shareable and bookmarkable.
+- **Search & pagination** — keyword search with URL-synced pagination so results are shareable and bookmarkable.
 
 ### 🔐 Auth & Authorization
 - **Clerk authentication** — sign-up, sign-in, session management, and JWT-based API protection handled by Clerk.
@@ -53,7 +50,7 @@ WonderfulMarketplace is a peer-to-peer marketplace where any registered user can
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React 18, Vite, TypeScript |
+| **Frontend** | React, Vite, TypeScript |
 | **Styling** | Tailwind CSS, DaisyUI |
 | **Server state** | TanStack Query (React Query) |
 | **Backend** | Node.js, Express, TypeScript |
@@ -61,7 +58,7 @@ WonderfulMarketplace is a peer-to-peer marketplace where any registered user can
 | **ORM** | Drizzle ORM |
 | **Auth** | Clerk |
 | **Payments** | Stripe (Checkout + Webhooks) |
-| **AI — LLM** | OpenRouter (description generation) |
+| **AI — LLM** | OpenRouter (qwen-turbo · llama-3.1-8b · nemotron-nano-8b) |
 | **AI — Embeddings** | OpenAI `text-embedding-3-small` + `pgvector` |
 | **Frontend hosting** | Vercel |
 | **Backend hosting** | Render |
@@ -80,7 +77,7 @@ Neon provisions a PostgreSQL database with connection pooling built in, which is
 TanStack Query handles caching, background refetching, loading/error states, and cache invalidation in a consistent, declarative way. This significantly reduces boilerplate and makes optimistic UI updates easier to reason about — especially for listing mutations.
 
 ### URL-synced pagination
-Pagination state (page number, filters, search query) is stored in URL search params rather than local component state. This means users can share or bookmark a filtered result page and return to the same view — a small but meaningful UX detail.
+Pagination state (page number, search query) is stored in URL search params rather than local component state. This means users can share or bookmark a search result page and return to the same view — a small but meaningful UX detail.
 
 ### Ownership-based authorization (not RBAC)
 The authorization model here is resource-ownership rather than role-based. Every protected mutation checks `product.sellerId === requestingUserId`. This is the correct model for a marketplace with no admin hierarchy — it is simpler, harder to misconfigure, and does not require a roles table.
@@ -89,7 +86,15 @@ The authorization model here is resource-ownership rather than role-based. Every
 Order confirmation is handled in the `checkout.session.completed` webhook rather than on the client's success redirect. This ensures orders are recorded even if a user closes the browser before the redirect fires, and protects against forged success redirects.
 
 ### AI description generation via OpenRouter
-OpenRouter abstracts the underlying LLM provider, making it straightforward to swap models without changing application code. The generation endpoint accepts a product title and optional category, constructs a prompt server-side, and streams back a ready-to-use description.
+OpenRouter abstracts the underlying LLM provider, making it straightforward to swap or chain models without changing application code. The generation endpoint uses a **paid primary → paid fallback → free fallback** strategy across three models:
+
+| Priority | Model | Type |
+|----------|-------|------|
+| 1st | `qwen/qwen-turbo` | Paid |
+| 2nd | `meta-llama/llama-3.1-8b-instruct` | Paid |
+| 3rd | `nvidia/llama-3.1-nemotron-nano-8b-v1:free` | Free |
+
+If the primary model fails or is unavailable, the backend automatically retries with the next model in the chain. This keeps the feature functional even when a paid model is rate-limited or experiencing downtime, without surfacing the failure to the user.
 
 ### Semantic search with pgvector
 When a product is created or updated, its title and description are embedded using `text-embedding-3-small` and the resulting vector is stored in a `vector(1536)` column. At query time, the search term is embedded with the same model and a cosine similarity search is performed. This allows queries like "comfortable running shoes" to surface listings described as "lightweight athletic footwear" — something keyword search cannot do.
@@ -142,14 +147,16 @@ comments
 
 **Endpoint:** `POST /api/ai/generate-description`
 
-The backend receives a `title` and `category`, constructs a prompt, and calls the OpenRouter completions API. The response is returned to the frontend and pre-filled into the description textarea, which the seller can edit before saving.
+The backend receives a product `title`, constructs a prompt, and calls the OpenRouter completions API using a model fallback chain — trying paid models first (`qwen/qwen-turbo` → `meta-llama/llama-3.1-8b-instruct`) before falling back to a free model (`nvidia/llama-3.1-nemotron-nano-8b-v1:free`). The generated description is returned to the frontend and pre-filled into the description textarea, which the seller can edit before saving.
 
 ```
-Seller fills in title + category
+Seller fills in product title
         ↓
 POST /api/ai/generate-description
         ↓
-OpenRouter → LLM completion
+Try qwen/qwen-turbo (paid)
+  → on failure: try llama-3.1-8b-instruct (paid)
+    → on failure: nvidia/nemotron-nano-8b (free)
         ↓
 Generated description returned to client
         ↓
@@ -174,98 +181,6 @@ The semantic search runs alongside the keyword search — both signals are used 
 
 ---
 
-## Getting Started
-
-### Prerequisites
-- Node.js 18+
-- A Neon database with `pgvector` extension enabled
-- Clerk account (development keys)
-- Stripe account (test mode keys)
-- OpenRouter API key
-- OpenAI API key
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/wonderful-marketplace.git
-cd wonderful-marketplace
-```
-
-### 2. Install dependencies
-
-```bash
-# Backend
-cd server && npm install
-
-# Frontend
-cd ../client && npm install
-```
-
-### 3. Configure environment variables
-
-See [Environment Variables](#environment-variables) below. Create `.env` files in both `server/` and `client/`.
-
-### 4. Enable pgvector and run migrations
-
-```bash
-# In your Neon SQL editor or psql
-CREATE EXTENSION IF NOT EXISTS vector;
-
-# Then from the server directory
-npm run db:migrate
-```
-
-### 5. Run in development
-
-```bash
-# Backend (from /server)
-npm run dev
-
-# Frontend (from /client)
-npm run dev
-```
-
----
-
-## Environment Variables
-
-### Backend (`server/.env`)
-
-```env
-DATABASE_URL=              # Neon PostgreSQL connection string
-CLERK_SECRET_KEY=          # Clerk secret key
-STRIPE_SECRET_KEY=         # Stripe secret key (sk_test_...)
-STRIPE_WEBHOOK_SECRET=     # Stripe webhook signing secret
-OPENROUTER_API_KEY=        # OpenRouter API key
-OPENAI_API_KEY=            # OpenAI API key (for embeddings)
-CLIENT_URL=                # Frontend origin (e.g. http://localhost:5173)
-PORT=3000
-```
-
-### Frontend (`client/.env`)
-
-```env
-VITE_CLERK_PUBLISHABLE_KEY=   # Clerk publishable key
-VITE_API_URL=                 # Backend base URL (e.g. http://localhost:3000)
-```
-
----
-
-## API Reference
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/api/products` | Public | List products with search, filter, pagination |
-| `GET` | `/api/products/:id` | Public | Get single product |
-| `POST` | `/api/products` | Seller | Create a listing |
-| `PUT` | `/api/products/:id` | Owner only | Update a listing |
-| `DELETE` | `/api/products/:id` | Owner only | Delete a listing |
-| `POST` | `/api/products/:id/comments` | Authenticated | Add a comment |
-| `POST` | `/api/checkout` | Authenticated | Create Stripe Checkout session |
-| `POST` | `/api/webhooks/stripe` | Stripe signature | Handle payment confirmation |
-| `POST` | `/api/ai/generate-description` | Authenticated | Generate product description via LLM |
-| `GET` | `/api/search/semantic` | Public | Semantic vector search |
-
 ---
 
 ## Deployment
@@ -284,4 +199,4 @@ The Express API is deployed as a Web Service on Render.
 
 > **Stripe webhooks:** Update the webhook endpoint in the Stripe dashboard to point to your Render service URL: `https://your-render-service.onrender.com/api/webhooks/stripe`
 
-> **Cold starts:** Render's free tier spins down inactive services. Expect a ~30–50s delay on the first request after a period of inactivity.
+> **Cold starts:**  Render's free tier spins down inactive services. A UptimeRobot monitor pings the service on a regular interval to keep it warm and prevent spin-down.
