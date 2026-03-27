@@ -7,6 +7,7 @@ import {
   integer,
   boolean,
   jsonb,
+  vector,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -33,6 +34,7 @@ export const products = pgTable('product', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  embedding: vector('embedding', { dimensions: 1536 }),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
 });

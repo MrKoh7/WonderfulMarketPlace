@@ -1,10 +1,15 @@
 import type { Request, Response } from 'express';
 import OpenAI from 'openai';
 import { ENV } from '../config/env';
+import { searchProductsByEmbedding } from '../db/queries';
 
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: ENV.OPENROUTER_API_KEY,
+});
+
+const openaiClient = new OpenAI({
+  apiKey: ENV.OPENAI_API_KEY,
 });
 
 const MODEL_CASCADE = [
@@ -75,4 +80,34 @@ export const generateDescription = async (req: Request, res: Response) => {
     `data: ${JSON.stringify({ error: 'AI service unavailable.' })}\n\n`,
   );
   res.end();
+};
+
+// Semantic Search
+
+// Exported so it can also be used by the backfill script
+export const generateEmbedding = async (text: string): Promise<number[]> => {
+  const response = await openaiClient.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
+  });
+  return response.data[0].embedding;
+};
+
+export const semanticSearch = async (req: Request, res: Response) => {
+  const { q } = req.query;
+
+  if (!q || typeof q !== 'string' || !q.trim()) {
+    res.status(400).json({ error: "Query parameter 'q' is required" });
+    return;
+  }
+
+  try {
+    console.log('[AI] Semantic Search query: ', q);
+    const queryEmbedding = await generateEmbedding(q);
+    const results = await searchProductsByEmbedding(queryEmbedding);
+    res.json(results);
+  } catch (error: any) {
+    console.error('[AI] Semantic Search failed: ', error.message);
+    res.status(500).json({ error: 'Semantic search failed' });
+  }
 };

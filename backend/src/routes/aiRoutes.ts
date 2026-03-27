@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { requireAuth } from '@clerk/express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { generateDescription } from '../controllers/aiController';
+import {
+  generateDescription,
+  semanticSearch,
+} from '../controllers/aiController';
 
 // Set to 5 generations per user per minute 5 gen/min - prevent abuse
 const aiLimiter = rateLimit({
@@ -19,5 +22,7 @@ router.post(
   aiLimiter,
   generateDescription,
 );
+
+router.get('/semantic-search', semanticSearch);
 
 export default router;

@@ -1,5 +1,5 @@
 import { db } from './index';
-import { eq, ilike, or, count, and } from 'drizzle-orm';
+import { eq, ilike, or, count, and, sql, isNull } from 'drizzle-orm';
 import {
   users,
   comments,
@@ -9,7 +9,7 @@ import {
   type NewProduct,
   cartItems,
   orders,
-  orderItems
+  orderItems,
 } from './schema';
 
 /**
@@ -158,7 +158,7 @@ export const deleteProductById = async (id: string) => {
 export const getCartItemsByUserId = async (userId: string) => {
   return db.query.cartItems.findMany({
     where: eq(cartItems.userId, userId),
-    with: { product: { with: { user: true } } }
+    with: { product: { with: { user: true } } },
   });
 };
 
@@ -249,7 +249,7 @@ export const createOrder = async (data: {
     productId: string;
     quantity: number;
     priceAtPurchase: string;
-  }[]; 
+  }[];
 }) => {
   // Create the order and its items in a single transaction
   // If any part fails, the whole thing rolls back
@@ -322,4 +322,48 @@ export const completeUserStripeOnboarding = async (userId: string) => {
     .where(eq(users.id, userId))
     .returning();
   return user;
+};
+
+// Semantic Search Queries
+export const searchProductsByEmbedding = async (queryEmbedding: number[]) => {
+  const vectorString = JSON.stringify(queryEmbedding);
+
+  const results = await db.execute(sql`
+    SELECT p.id, p.title, p.description, p.price, p.image_url, p.user_id, p.created_at,
+    1 - (p.embedding <=> ${vectorString}::vector) as similarity, 
+    json_build_object(
+    'id', u.id,
+    'name', u.name,
+    'imageUrl', u.image_url
+    ) AS user
+     FROM product p
+     JOIN users u ON p.user_id = u.id
+     WHERE p.embedding IS NOT NULL
+     AND 1 - (p.embedding <=> ${vectorString}:: vector) > 0.5
+     ORDER BY p.embedding <=> ${vectorString}:: vector
+     LIMIT 12
+    `);
+
+  return results.rows;
+};
+
+// Updates a single product's embedding vector - called on create/update
+export const updateProductEmbedding = async (
+  productId: string,
+  embeddingVector: number[],
+) => {
+  const vectorString = JSON.stringify(embeddingVector);
+
+  await db.execute(sql`
+    UPDATE product
+    SET embedding = ${vectorString}::vector
+    WHERE id = ${productId}::uuid
+    `);
+};
+
+// Fetch all products with no embedding yet - for backfill script
+export const getProductWithoutEmbedding = async () => {
+  return db.query.products.findMany({
+    where: isNull(products.embedding),
+  });
 };

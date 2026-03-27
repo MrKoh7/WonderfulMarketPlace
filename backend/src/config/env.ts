@@ -20,6 +20,7 @@ export const ENV = {
   STRIPE_SECRET_KEY: requireEnv('STRIPE_SECRET_KEY'),
   STRIPE_WEBHOOK_SECRET: requireEnv('STRIPE_WEBHOOK_SECRET'),
   OPENROUTER_API_KEY: requireEnv('OPENROUTER_API_KEY'),
+  OPENAI_API_KEY: requireEnv("OPENAI_API_KEY"),
 
   // These have sensible fallbacks
   NODE_ENV: process.env.NODE_ENV || 'development',

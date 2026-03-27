@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import * as queries from '../db/queries';
 import { getAuth } from '@clerk/express';
+import { generateEmbedding } from './aiController';
+import { updateProductEmbedding } from '../db/queries';
 
 // GET all products (with optional search filtering)
 export const getAllProducts = async (req: Request, res: Response) => {
@@ -8,14 +10,19 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const search = req.query.search as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 12;
-    const {data, total} = await queries.searchProducts(search, page, limit);
-    res.status(200).json({ data, total:Number(total), page, limit, totalPages: Math.ceil(Number(total)/limit) });
+    const { data, total } = await queries.searchProducts(search, page, limit);
+    res.status(200).json({
+      data,
+      total: Number(total),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(total) / limit),
+    });
   } catch (error) {
     console.error('Error Fetching Products: ', error);
     res.status(500).json({ error: 'Failed to get products' });
   }
 };
-
 
 // Get products for current user (protected)
 export const getMyProducts = async (req: Request, res: Response) => {
@@ -54,9 +61,9 @@ export const createProduct = async (req: Request, res: Response) => {
     const { title, description, imageUrl, price } = req.body;
 
     if (!title || !description || !imageUrl || !price) {
-      res
-        .status(400)
-        .json({ error: 'Title, description, imageUrl and price are required!' });
+      res.status(400).json({
+        error: 'Title, description, imageUrl and price are required!',
+      });
       return;
     }
 
@@ -67,6 +74,13 @@ export const createProduct = async (req: Request, res: Response) => {
       price,
       userId,
     });
+
+    // Generate and store embedding after product is created
+    generateEmbedding(`${title}${description}`)
+      .then((embedding) => updateProductEmbedding(product.id, embedding))
+      .catch((err) =>
+        console.log('[AI] Failed to embed product on create: ', err.message),
+      );
 
     res.status(201).json(product);
   } catch (error) {
@@ -101,6 +115,13 @@ export const updateProduct = async (req: Request, res: Response) => {
       imageUrl,
       price,
     });
+
+    // Re-embed on update - title or description may have changed
+    generateEmbedding(`${title}${description}`)
+      .then((embedding) => updateProductEmbedding(product.id, embedding))
+      .catch((err) =>
+        console.log('[AI] Failed to re-embed product on update:', err.message),
+      );
 
     res.status(200).json(product);
   } catch (error) {
