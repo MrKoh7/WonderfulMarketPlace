@@ -14,7 +14,7 @@ A full-stack marketplace web application where users can buy and sell products, 
 - [Architecture & Design Decisions](#architecture--design-decisions)
 - [Database Schema](#database-schema)
 - [AI Integration](#ai-integration)
-- [Known Limitations & Future Improvements](#known-limitation--future-improvements)
+- [Known Limitations & Future Improvements](#known-limitations--future-improvements)
 - [Deployment](#deployment)
 
 ---
@@ -185,16 +185,21 @@ The semantic search runs alongside the keyword search — both signals are used 
 ---
 
 ## Known Limitations & Future Improvements
+
 Current Limitations
 
 No product filtering — users can search by keyword and use semantic search, but there is no filter UI for price range, category, or other attributes. All filtering would need to be done manually through search queries.
+
 Image handling via URL only — sellers paste an external image URL which is saved directly to the database. There is no file upload support, meaning broken or deleted external URLs will result in missing images with no fallback.
+
 No real-time notifications — buyers and sellers are not notified of new orders, comments, or listing changes in real time. Users must manually refresh to see updates.
 
 Planned Improvements
 
 Product filtering — add filter controls for price range and category on the listings page, backed by query param state to keep them URL-synced alongside existing pagination.
+
 Cloudinary integration — replace URL-based image input with direct file uploads via Cloudinary, enabling image validation, resizing, and reliable hosting independent of third-party URLs.
+
 Real-time notifications — use WebSockets or Server-Sent Events to push order confirmations and new comment alerts to the relevant user without requiring a page refresh.
 
 ## Deployment
