@@ -2,7 +2,7 @@
 
 A full-stack marketplace web application where users can buy and sell products, powered by AI-assisted content generation and semantic search. Built with a modern TypeScript stack across both frontend and backend.
 
-🔗 **Live Demo:** [wonderful-marketplace.vercel.app](https://wonderful-marketplace.vercel.app) <!-- Replace with actual URL -->
+🔗 **Live Demo:** [wonderful-marketplace.vercel.app](https://wonderful-market-place.vercel.app/) 
 
 ---
 
