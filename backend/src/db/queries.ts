@@ -355,7 +355,7 @@ export const searchProductsByEmbedding = async (queryEmbedding: number[]) => {
       FROM product p
       JOIN users u ON p.user_id = u.id
       WHERE p.embedding IS NOT NULL
-        AND 1 - (p.embedding <=> ${vectorString}::vector) > 0.35
+        AND 1 - (p.embedding <=> ${vectorString}::vector) > 0.32
       ORDER BY p.embedding <=> ${vectorString}::vector
       LIMIT 12
     `);
